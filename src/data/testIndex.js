@@ -1,54 +1,16 @@
 import quantRaw from './quant.md?raw';
+import diRaw from '../tests/quant/DI.md?raw';
 import programmingRaw from './programming.md?raw';
 import verbalRaw from './verbal.md?raw';
+import readingRaw from '../tests/verbal/reading.md?raw';
 import codingRaw from './coding.md?raw';
 import { parseSubjectMarkdown } from '../parser.js';
+import { parseDiMarkdown } from '../parsers/diParser.js';
+import { parseReadingMarkdown } from '../parsers/readingParser.js';
 
-const SUBJECT_CONFIG = [
-  {
-    subjectId: 'quant',
-    subjectName: 'Quant',
-    sectionLabel: 'Quantitative Aptitude',
-    description: 'Arithmetic, logic, data interpretation, and quantitative reasoning.',
-    durationMinutes: 60,
-    raw: quantRaw,
-  },
-  {
-    subjectId: 'programming',
-    subjectName: 'Programming',
-    sectionLabel: 'Programming Logic',
-    description: 'Coding fundamentals, output prediction, and problem solving.',
-    durationMinutes: 45,
-    raw: programmingRaw,
-  },
-  {
-    subjectId: 'verbal',
-    subjectName: 'Verbal',
-    sectionLabel: 'Verbal Ability',
-    description: 'Grammar, vocabulary, comprehension, and verbal reasoning.',
-    durationMinutes: 30,
-    raw: verbalRaw,
-  },
-  {
-    subjectId: 'coding',
-    subjectName: 'Coding',
-    sectionLabel: 'Coding Practice',
-    description: 'Paste your solutions after solving in your local IDE. Compare with optimal answers.',
-    durationMinutes: 90,
-    raw: codingRaw,
-  },
-];
-
-function buildTestsForSubject({
-  subjectId,
-  subjectName,
-  sectionLabel,
-  description,
-  durationMinutes,
-  raw,
-}) {
+function buildStandardTests({ subjectId, subjectName, sectionLabel, description, durationMinutes, raw, idPrefix = '' }) {
   return parseSubjectMarkdown(raw).map((parsedTest) => ({
-    id: `${subjectId}-test-${parsedTest.testNumber}`,
+    id: `${subjectId}${idPrefix}-test-${parsedTest.testNumber}`,
     title: `${subjectName} - ${parsedTest.id}`,
     subjectId,
     subjectName,
@@ -61,22 +23,99 @@ function buildTestsForSubject({
   }));
 }
 
-/**
- * Flat list of all mock tests across quant, programming, and verbal.
- * @type {Array<{
- *   id: string,
- *   title: string,
- *   subjectId: string,
- *   subjectName: string,
- *   sectionLabel: string,
- *   description: string,
- *   durationMinutes: number,
- *   durationSeconds: number,
- *   questionCount: number,
- *   questions: import('../parser.js').ExamQuestion[]
- * }>}
- */
-export const tests = SUBJECT_CONFIG.flatMap(buildTestsForSubject);
+function buildDiTests({ subjectId, subjectName, durationMinutes, raw }) {
+  return parseDiMarkdown(raw).map((dataset) => ({
+    id: `${subjectId}-di-${dataset.testNumber}`,
+    title: `${subjectName} - ${dataset.id}`,
+    subjectId,
+    subjectName,
+    sectionLabel: 'Data Interpretation',
+    description: dataset.title,
+    durationMinutes,
+    durationSeconds: durationMinutes * 60,
+    questionCount: dataset.questions.length,
+    questions: dataset.questions,
+    contextMarkdown: dataset.contextMarkdown,
+    chartSpec: dataset.chartSpec,
+  }));
+}
+
+function buildReadingTests({ subjectId, subjectName, durationMinutes, raw }) {
+  return parseReadingMarkdown(raw).map((passage) => ({
+    id: `${subjectId}-reading-${passage.testNumber}`,
+    title: `${subjectName} - Passage ${passage.testNumber}`,
+    subjectId,
+    subjectName,
+    sectionLabel: 'Reading Comprehension',
+    description: passage.title,
+    durationMinutes,
+    durationSeconds: durationMinutes * 60,
+    questionCount: passage.questions.length,
+    questions: passage.questions,
+    passageText: passage.passageText,
+  }));
+}
+
+const QUANT_TESTS = [
+  ...buildStandardTests({
+    subjectId: 'quant',
+    subjectName: 'Quant',
+    sectionLabel: 'Quantitative Aptitude',
+    description: 'Core quant practice sets.',
+    durationMinutes: 60,
+    raw: quantRaw,
+  }),
+  ...buildDiTests({
+    subjectId: 'quant',
+    subjectName: 'Quant',
+    durationMinutes: 45,
+    raw: diRaw,
+  }),
+];
+
+const VERBAL_TESTS = [
+  ...buildStandardTests({
+    subjectId: 'verbal',
+    subjectName: 'Verbal',
+    sectionLabel: 'Verbal Ability',
+    description: 'Grammar, vocabulary, and verbal reasoning.',
+    durationMinutes: 30,
+    raw: verbalRaw,
+  }),
+  ...buildReadingTests({
+    subjectId: 'verbal',
+    subjectName: 'Verbal',
+    durationMinutes: 35,
+    raw: readingRaw,
+  }),
+];
+
+const PROGRAMMING_TESTS = buildStandardTests({
+  subjectId: 'programming',
+  subjectName: 'Programming',
+  sectionLabel: 'Programming Logic',
+  description: 'Coding fundamentals and problem solving.',
+  durationMinutes: 45,
+  raw: programmingRaw,
+});
+
+const CODING_TESTS = buildStandardTests({
+  subjectId: 'coding',
+  subjectName: 'Coding',
+  sectionLabel: 'Coding Practice',
+  description: 'Paste solutions and compare with optimal answers.',
+  durationMinutes: 90,
+  raw: codingRaw,
+  idPrefix: '',
+});
+
+/** @type {import('../parser.js').ExamQuestion[]} */
+export const tests = [
+  ...QUANT_TESTS,
+  ...PROGRAMMING_TESTS,
+  ...VERBAL_TESTS,
+  ...CODING_TESTS,
+];
 
 export function getTestById(testId) {
   return tests.find((t) => t.id === testId) ?? null;
@@ -86,15 +125,37 @@ export function getTestsBySubject(subjectId) {
   return tests.filter((t) => t.subjectId === subjectId);
 }
 
-/** Subject cards for the dashboard home screen */
-export const subjects = SUBJECT_CONFIG.map((cfg) => {
-  const subjectTests = getTestsBySubject(cfg.subjectId);
-  return {
-    subjectId: cfg.subjectId,
-    subjectName: cfg.subjectName,
-    sectionLabel: cfg.sectionLabel,
-    description: cfg.description,
-    durationMinutes: cfg.durationMinutes,
-    testCount: subjectTests.length,
-  };
-});
+export const subjects = [
+  {
+    subjectId: 'quant',
+    subjectName: 'Quant',
+    sectionLabel: 'Quantitative Aptitude & DI',
+    description: 'Quant sets plus data interpretation with charts and tables.',
+    durationMinutes: 60,
+    testCount: getTestsBySubject('quant').length,
+  },
+  {
+    subjectId: 'programming',
+    subjectName: 'Programming',
+    sectionLabel: 'Programming Logic',
+    description: 'Coding fundamentals, output prediction, and problem solving.',
+    durationMinutes: 45,
+    testCount: getTestsBySubject('programming').length,
+  },
+  {
+    subjectId: 'verbal',
+    subjectName: 'Verbal',
+    sectionLabel: 'Verbal & Reading',
+    description: 'Verbal ability and reading comprehension passages.',
+    durationMinutes: 35,
+    testCount: getTestsBySubject('verbal').length,
+  },
+  {
+    subjectId: 'coding',
+    subjectName: 'Coding',
+    sectionLabel: 'Coding Practice',
+    description: 'Paste your solutions after solving in your local IDE.',
+    durationMinutes: 90,
+    testCount: getTestsBySubject('coding').length,
+  },
+];

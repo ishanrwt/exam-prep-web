@@ -1,3 +1,6 @@
+import MarkdownContext from './MarkdownContext.jsx';
+import DiChart from './DiChart.jsx';
+
 export default function QuestionPanel({
   question,
   questionIndex,
@@ -6,6 +9,9 @@ export default function QuestionPanel({
   answerValue,
   onAnswerChange,
   disabled = false,
+  contextMarkdown,
+  chartSpec,
+  passageText,
 }) {
   if (!question) return null;
 
@@ -20,8 +26,29 @@ export default function QuestionPanel({
       ? 'question-type-pill--fub'
       : '';
 
+  const showDiContext = Boolean(contextMarkdown);
+  const showPassage = Boolean(passageText);
+
   return (
     <div className={`question-panel ${disabled ? 'question-panel--disabled' : ''}`}>
+      {(showDiContext || showPassage) && (
+        <section className="question-shared-context" aria-label="Reference material">
+          {showPassage && (
+            <div className="reading-passage">
+              <h3 className="reading-passage-title">Reading Passage</h3>
+              <div className="reading-passage-text">{passageText}</div>
+            </div>
+          )}
+          {showDiContext && (
+            <>
+              <h3 className="di-context-title">Data &amp; charts</h3>
+              <DiChart chartSpec={chartSpec} />
+              <MarkdownContext markdown={contextMarkdown} />
+            </>
+          )}
+        </section>
+      )}
+
       <div className="question-header">
         <div className="question-meta">
           <h2 className="question-number">

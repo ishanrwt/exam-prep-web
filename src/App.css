@@ -454,6 +454,153 @@ body {
   pointer-events: none;
 }
 
+.question-shared-context {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: var(--surface-container-low);
+  border: 1px solid rgba(196, 197, 213, 0.5);
+  border-radius: 0.75rem;
+  max-height: 28rem;
+  overflow-y: auto;
+}
+
+.di-context-title,
+.reading-passage-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+.reading-passage-text {
+  white-space: pre-wrap;
+  line-height: 1.65;
+  font-size: 0.9375rem;
+  color: var(--on-surface);
+  max-height: 14rem;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.markdown-context {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+.ctx-h1 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+  color: var(--on-surface);
+}
+
+.ctx-h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.5rem;
+  color: var(--on-surface-variant);
+}
+
+.ctx-p,
+.ctx-bold {
+  margin: 0.35rem 0;
+  line-height: 1.5;
+  color: var(--on-surface);
+}
+
+.ctx-bold {
+  font-weight: 600;
+}
+
+.ctx-table-wrap {
+  overflow-x: auto;
+  margin: 0.75rem 0 1rem;
+}
+
+.ctx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.ctx-table th,
+.ctx-table td {
+  border: 1px solid var(--outline-variant);
+  padding: 0.5rem 0.625rem;
+  text-align: left;
+}
+
+.ctx-table th {
+  background: var(--secondary-container);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.ctx-table tbody tr:nth-child(even) {
+  background: var(--surface-container-lowest);
+}
+
+.di-chart {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: var(--surface-container-lowest);
+  border-radius: 0.5rem;
+  border: 1px solid var(--outline-variant);
+}
+
+.di-chart-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.di-chart-svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 220px;
+  height: auto;
+}
+
+.di-chart-svg--wide {
+  max-width: 100%;
+  width: 100%;
+}
+
+.di-chart-legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--on-surface-variant);
+}
+
+.di-chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.di-legend-swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.di-chart-x-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: var(--on-surface-variant);
+  margin-top: 0.25rem;
+  padding: 0 1.5rem;
+}
+
 .question-panel {
   width: 100%;
   max-width: 56rem; /* max-w-4xl */

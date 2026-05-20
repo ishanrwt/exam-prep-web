@@ -272,6 +272,9 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
                 answerValue={answerValue}
                 onAnswerChange={handleAnswerChange}
                 disabled={!timerStarted}
+                contextMarkdown={test.contextMarkdown}
+                chartSpec={test.chartSpec}
+                passageText={test.passageText}
               />
             </div>
             <QuestionPalette
