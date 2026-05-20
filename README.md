@@ -1,6 +1,20 @@
 # TCS NQT Mock Interface
 
-Frontend-only mock exam app built with React and Vite. Questions load from `src/questions.md` via Vite's raw import — no backend required.
+Frontend-only mock exam app with a **test dashboard** and consolidated Markdown per subject.
+
+## Data files (single file per subject)
+
+| Subject | File |
+|---------|------|
+| Quant | `src/data/quant.md` |
+| Programming | `src/data/programming.md` |
+| Verbal | `src/data/verbal.md` |
+
+Each file contains multiple tests separated by `--- TEST 1 ---`, `--- TEST 2 ---`, etc. Questions and answers share the same `### Q1`, `### Q2` headers within each test block.
+
+## Registry
+
+`src/data/testIndex.js` imports the three files with `?raw`, runs `parseSubjectMarkdown()`, and exports a flat `tests` array (e.g. `quant-test-1` → **Quant - Test 1**).
 
 ## Quick start
 
@@ -9,28 +23,6 @@ npm install
 npm run dev
 ```
 
-Open the URL shown in the terminal (usually `http://localhost:5173`).
+## Adding content
 
-## Features
-
-- Markdown question parser (`src/parser.js`)
-- Exam state persisted in `localStorage` (refresh-safe)
-- CBT-style layout: header, question panel, palette sidebar, action bar
-- 60-minute countdown timer (configurable default in `useExamPersistence.js`)
-
-## Adding questions
-
-Edit `src/questions.md` using this format:
-
-```md
-### Q: Your question text here?
-- [ ] Option A
-- [x] Correct option
-- [ ] Option C
-```
-
-Mark the correct option with `[x]`.
-
-## Reset progress
-
-Use **Start New Attempt** in the score modal, or clear `localStorage` key `tcs-nqt-mock-exam` in DevTools.
+Edit the relevant `src/data/*.md` file. Use `- [FUB]` for fill-in questions; otherwise use `- [ ]` MCQ options. Match each question block with an answer block using the same `### Qn` id.

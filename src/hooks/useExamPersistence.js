@@ -1,77 +1,115 @@
 import { useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'tcs-nqt-mock-exam';
+export const INITIAL_TIME_SECONDS = 3600;
+const STORAGE_PREFIX = 'tcs-nqt-mock-exam';
 
-const DEFAULT_STATE = {
-  currentQuestionIndex: 0,
-  userAnswers: {},
-  questionStatus: {},
-  timeLeft: 3600,
-};
+function storageKey(testId) {
+  return `${STORAGE_PREFIX}-${testId}`;
+}
 
-function loadFromStorage() {
+function createDefaultState(durationSeconds) {
+  return {
+    currentQuestionIndex: 0,
+    userAnswers: {},
+    questionStatus: {},
+    timeLeft: durationSeconds,
+    timerStarted: false,
+    isSubmitted: false,
+  };
+}
+
+function loadFromStorage(testId, durationSeconds) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_STATE };
+    const raw = localStorage.getItem(storageKey(testId));
+    if (!raw) return createDefaultState(durationSeconds);
     const parsed = JSON.parse(raw);
     return {
       currentQuestionIndex:
         typeof parsed.currentQuestionIndex === 'number'
           ? parsed.currentQuestionIndex
-          : DEFAULT_STATE.currentQuestionIndex,
+          : 0,
       userAnswers:
         parsed.userAnswers && typeof parsed.userAnswers === 'object'
           ? parsed.userAnswers
-          : DEFAULT_STATE.userAnswers,
+          : {},
       questionStatus:
         parsed.questionStatus && typeof parsed.questionStatus === 'object'
           ? parsed.questionStatus
-          : DEFAULT_STATE.questionStatus,
+          : {},
       timeLeft:
-        typeof parsed.timeLeft === 'number' ? parsed.timeLeft : DEFAULT_STATE.timeLeft,
+        typeof parsed.timeLeft === 'number' ? parsed.timeLeft : durationSeconds,
+      timerStarted: Boolean(parsed.timerStarted),
+      isSubmitted: Boolean(parsed.isSubmitted),
     };
   } catch {
-    return { ...DEFAULT_STATE };
+    return createDefaultState(durationSeconds);
   }
 }
 
-export function useExamPersistence(questionCount) {
+/**
+ * Exam state scoped per test id (separate localStorage key per test).
+ */
+export function useExamPersistence(testId, questionCount, durationSeconds = INITIAL_TIME_SECONDS) {
   const [hydrated, setHydrated] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [questionStatus, setQuestionStatus] = useState({});
-  const [timeLeft, setTimeLeft] = useState(3600);
+  const [timeLeft, setTimeLeft] = useState(durationSeconds);
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    const saved = loadFromStorage();
+    if (!testId) {
+      setHydrated(false);
+      return;
+    }
+
+    setHydrated(false);
+    const saved = loadFromStorage(testId, durationSeconds);
     setCurrentQuestionIndex(
       Math.min(Math.max(0, saved.currentQuestionIndex), Math.max(0, questionCount - 1))
     );
     setUserAnswers(saved.userAnswers);
     setQuestionStatus(saved.questionStatus);
     setTimeLeft(saved.timeLeft);
+    setTimerStarted(saved.timerStarted);
+    setIsSubmitted(saved.isSubmitted);
     setHydrated(true);
-  }, [questionCount]);
+  }, [testId, questionCount, durationSeconds]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !testId) return;
     localStorage.setItem(
-      STORAGE_KEY,
+      storageKey(testId),
       JSON.stringify({
         currentQuestionIndex,
         userAnswers,
         questionStatus,
         timeLeft,
+        timerStarted,
+        isSubmitted,
       })
     );
-  }, [hydrated, currentQuestionIndex, userAnswers, questionStatus, timeLeft]);
+  }, [
+    hydrated,
+    testId,
+    currentQuestionIndex,
+    userAnswers,
+    questionStatus,
+    timeLeft,
+    timerStarted,
+    isSubmitted,
+  ]);
 
   const resetExam = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    if (!testId) return;
+    localStorage.removeItem(storageKey(testId));
     setCurrentQuestionIndex(0);
     setUserAnswers({});
     setQuestionStatus({});
-    setTimeLeft(3600);
+    setTimeLeft(durationSeconds);
+    setTimerStarted(false);
+    setIsSubmitted(false);
   };
 
   return {
@@ -84,6 +122,10 @@ export function useExamPersistence(questionCount) {
     setQuestionStatus,
     timeLeft,
     setTimeLeft,
+    timerStarted,
+    setTimerStarted,
+    isSubmitted,
+    setIsSubmitted,
     resetExam,
   };
 }

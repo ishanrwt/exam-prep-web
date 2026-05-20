@@ -1,5 +1,3 @@
-import React from 'react';
-
 const STATUS_CLASS = {
   'Not Visited': 'palette-not-visited',
   Answered: 'palette-answered',
@@ -9,22 +7,19 @@ const STATUS_CLASS = {
 
 export default function QuestionPalette({
   totalQuestions,
+  sectionLabel = 'Section',
   currentQuestionIndex,
   questionStatus,
   onJumpTo,
-  onSubmit, // Handled inside Palette now
+  onSubmit,
+  disabled = false,
 }) {
   return (
-    <aside className="question-palette">
+    <aside className={`question-palette ${disabled ? 'question-palette--disabled' : ''}`}>
       <div className="palette-header">
-        <img 
-          className="palette-avatar"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiNWCcuC6atOZhsfxTJ_J__Q2t1n9QLwOLWplANQjNHXLVQvl_nLfQ9r32ElpWIinST8H-ls9Rz2rirThV1FWMdqcnrlBD4nR7YBgixGVz-bKEr_5QNdZqPqlD-ypIrzDbrvX4iUd0NjH4xwm-8Hdj6jkfpU-5S14VXrOICXr3TlusyoW4dzzS2oRWBCb353CWfD7Ref71JGjArP1kC5-9bgO3Kl6PsxaLDXx8VhpC6YGzOXhoQ2jhcdTGr9kPbJ1YEcwkNW-Jvaks" 
-          alt="Candidate Side Avatar"
-        />
         <div className="palette-info">
           <h3 className="palette-title">Question Palette</h3>
-          <span className="palette-section-label">Section: Quantitative Aptitude</span>
+          <span className="palette-section-label">Section: {sectionLabel}</span>
         </div>
       </div>
 
@@ -38,6 +33,7 @@ export default function QuestionPalette({
               type="button"
               className={`palette-btn ${STATUS_CLASS[status] ?? 'palette-not-visited'} ${isActive ? 'palette-active' : ''}`}
               onClick={() => onJumpTo(index)}
+              disabled={disabled}
               aria-label={`Question ${index + 1}: ${status}`}
               aria-current={isActive ? 'true' : undefined}
             >
@@ -66,8 +62,8 @@ export default function QuestionPalette({
             <span>Review</span>
           </div>
         </div>
-        
-        <button type="button" className="btn-submit" onClick={onSubmit}>
+
+        <button type="button" className="btn-submit" onClick={onSubmit} disabled={disabled}>
           Submit Test
         </button>
       </div>
