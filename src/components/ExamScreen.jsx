@@ -37,6 +37,7 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
   } = useExamPersistence(test.id, questions.length, test.durationSeconds);
 
   const [pendingAnswer, setPendingAnswer] = useState(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   const totalQuestions = questions.length;
@@ -134,6 +135,7 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
   const goToQuestion = useCallback(
     (nextIndex) => {
       if (!examActive || nextIndex === currentQuestionIndex) return;
+      setPaletteOpen(false);
       markVisitedIfNeeded(currentQuestionIndex);
       setCurrentQuestionIndex(nextIndex);
       const stored = userAnswers[nextIndex];
@@ -203,6 +205,7 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
 
   const handleSubmit = () => {
     if (!examActive) return;
+    setPaletteOpen(false);
     markVisitedIfNeeded(currentQuestionIndex);
     let finalAnswers = { ...userAnswers };
     if (hasValidAnswer(currentQuestion, pendingAnswer ?? savedAnswer)) {
@@ -277,6 +280,15 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
                 passageText={test.passageText}
               />
             </div>
+            {paletteOpen && (
+              <button
+                type="button"
+                className="palette-backdrop"
+                aria-label="Close question palette"
+                onClick={() => setPaletteOpen(false)}
+              />
+            )}
+
             <QuestionPalette
               totalQuestions={totalQuestions}
               sectionLabel={test.sectionLabel}
@@ -285,8 +297,35 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
               onJumpTo={goToQuestion}
               onSubmit={handleSubmit}
               disabled={!timerStarted}
+              mobileOpen={paletteOpen}
+              onClose={() => setPaletteOpen(false)}
             />
           </main>
+
+          <button
+            type="button"
+            className="mobile-palette-toggle"
+            onClick={() => setPaletteOpen(true)}
+            disabled={!timerStarted}
+            aria-label="Open question palette"
+            aria-expanded={paletteOpen}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"
+              />
+            </svg>
+            Questions
+          </button>
 
           <ActionBar
             onMarkAndNext={handleMarkAndNext}

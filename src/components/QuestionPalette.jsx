@@ -13,14 +13,28 @@ export default function QuestionPalette({
   onJumpTo,
   onSubmit,
   disabled = false,
+  mobileOpen = false,
+  onClose,
 }) {
   return (
-    <aside className={`question-palette ${disabled ? 'question-palette--disabled' : ''}`}>
+    <aside
+      className={`question-palette ${disabled ? 'question-palette--disabled' : ''} ${mobileOpen ? 'question-palette--mobile-open' : ''}`}
+    >
       <div className="palette-header">
         <div className="palette-info">
           <h3 className="palette-title">Question Palette</h3>
           <span className="palette-section-label">Section: {sectionLabel}</span>
         </div>
+        {onClose && (
+          <button
+            type="button"
+            className="palette-close-btn"
+            onClick={onClose}
+            aria-label="Close question palette"
+          >
+            ×
+          </button>
+        )}
       </div>
 
       <div className="palette-grid">
