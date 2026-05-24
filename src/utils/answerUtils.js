@@ -21,6 +21,16 @@ export function getUserAnswerDisplay(question, userAnswer) {
   return null;
 }
 
+/** @param {import('../parser.js').ExamQuestion} question */
+export function getCorrectAnswerDisplay(question) {
+  if (question.type === 'MCQ' && question.correctAnswerIndex >= 0) {
+    const letter = String.fromCharCode(65 + question.correctAnswerIndex);
+    const text = question.options[question.correctAnswerIndex]?.text;
+    return text ? `${letter}) ${text}` : question.correctAnswer;
+  }
+  return question.correctAnswer || '—';
+}
+
 /**
  * MCQ / FUB auto-graded; CODE is manual review only (always false).
  * @param {import('../parser.js').ExamQuestion} question

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { hasValidAnswer, isTextAnswerType } from '../utils/answerUtils.js';
-import { calculateScore, markTestCompleted } from '../utils/testCompletion.js';
+import { saveTestReport, clearTestReport } from '../utils/testReports.js';
 import { useExamPersistence } from '../hooks/useExamPersistence.js';
 import Header from './Header.jsx';
 import QuestionPanel from './QuestionPanel.jsx';
@@ -57,12 +57,11 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
 
   const finishTest = useCallback(
     (finalAnswers) => {
-      const { score, total, totalQuestions } = calculateScore(questions, finalAnswers);
-      markTestCompleted(test.id, { score, total, totalQuestions });
+      saveTestReport(test, finalAnswers);
       setIsSubmitted(true);
       setCurrentScreen('evaluation');
     },
-    [questions, test.id, setIsSubmitted, setCurrentScreen]
+    [test, setIsSubmitted, setCurrentScreen]
   );
 
   useEffect(() => {
@@ -105,6 +104,7 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
 
   const handleResetTimer = () => {
     resetExam();
+    clearTestReport(test.id);
     setPendingAnswer(null);
     setCurrentScreen('exam');
   };
@@ -241,13 +241,13 @@ export default function ExamScreen({ test, currentScreen, setCurrentScreen, onBa
         isSubmitted={showEvaluation}
         onStartTimer={handleStartTimer}
         onResetTimer={handleResetTimer}
+        onBackToSelection={onBackToDashboard}
       />
 
       {showEvaluation ? (
         <EvaluationSheet
+          testId={test.id}
           testTitle={test.title}
-          questions={questions}
-          userAnswers={userAnswers}
           onStartNewAttempt={handleStartNewAttempt}
           onBackToDashboard={handleBackToDashboard}
         />

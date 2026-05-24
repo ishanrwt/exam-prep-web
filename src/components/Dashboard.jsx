@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { subjects, getTestsBySubject } from '../data/testIndex.js';
 import { getAllCompletions } from '../utils/testCompletion.js';
+import { hasAnyReports } from '../utils/testReports.js';
+import ReportsHub from './ReportsHub.jsx';
 
 function formatDuration(minutes) {
   if (minutes >= 60) {
@@ -11,20 +13,33 @@ function formatDuration(minutes) {
 }
 
 export default function Dashboard({ onTakeTest }) {
+  const [view, setView] = useState('home');
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [completions, setCompletions] = useState({});
+  const [hasReports, setHasReports] = useState(false);
 
   const refreshCompletions = useCallback(() => {
     setCompletions(getAllCompletions());
+    setHasReports(hasAnyReports());
   }, []);
 
   useEffect(() => {
     refreshCompletions();
   }, [refreshCompletions]);
 
+  if (view === 'reports') {
+    return (
+      <ReportsHub
+        onBack={() => {
+          setView('home');
+          refreshCompletions();
+        }}
+      />
+    );
+  }
+
   const selectedSubject = subjects.find((s) => s.subjectId === selectedSubjectId);
   const subjectTests = selectedSubjectId ? getTestsBySubject(selectedSubjectId) : [];
-
   const completedInSubject = subjectTests.filter((t) => completions[t.id]?.completed).length;
 
   if (selectedSubjectId && selectedSubject) {
@@ -82,25 +97,7 @@ export default function Dashboard({ onTakeTest }) {
                   )}
                   <div className="dashboard-card-meta">
                     <span className="dashboard-meta-item">
-                      <svg
-                        className="dashboard-meta-icon"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="2"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                        />
-                      </svg>
-                      {formatDuration(test.durationMinutes)}
-                    </span>
-                    <span className="dashboard-meta-item dashboard-meta-questions">
-                      {test.questionCount} questions
+                      {formatDuration(test.durationMinutes)} · {test.questionCount} questions
                     </span>
                   </div>
                 </div>
@@ -124,9 +121,20 @@ export default function Dashboard({ onTakeTest }) {
       <header className="dashboard-header">
         <h1>TCS NQT Mock Tests</h1>
         <p className="dashboard-subtitle">
-          Pick a subject to see available practice tests. Progress is saved in your browser.
+          Pick a subject to practice, or review your past attempts with full answer breakdowns.
         </p>
       </header>
+
+      <div className="dashboard-home-actions">
+        <button
+          type="button"
+          className="btn btn-outline-primary dashboard-reports-btn"
+          onClick={() => setView('reports')}
+        >
+          View your report
+          {hasReports && <span className="dashboard-reports-dot" aria-hidden="true" />}
+        </button>
+      </div>
 
       <div className="dashboard-grid dashboard-grid--subjects">
         {subjects.map((subject) => {

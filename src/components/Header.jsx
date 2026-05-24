@@ -5,6 +5,7 @@ export default function Header({
   isSubmitted,
   onStartTimer,
   onResetTimer,
+  onBackToSelection,
 }) {
   const hours = Math.floor(timeLeft / 3600);
   const minutes = Math.floor((timeLeft % 3600) / 60);
@@ -15,9 +16,20 @@ export default function Header({
 
   return (
     <header className="exam-header">
-      <div className="header-brand">
-        <h1>TCS NQT Mock</h1>
-        {testTitle && <span className="header-test-title">{testTitle}</span>}
+      <div className="header-left">
+        {onBackToSelection && (
+          <button
+            type="button"
+            className="btn btn-ghost header-back-btn"
+            onClick={onBackToSelection}
+          >
+            ← Selection
+          </button>
+        )}
+        <div className="header-brand">
+          <h1>TCS NQT Mock</h1>
+          {testTitle && <span className="header-test-title">{testTitle}</span>}
+        </div>
       </div>
       <div className="header-actions">
         <div className={`header-timer ${isLow ? 'timer-warning' : ''}`} aria-live="polite">
